@@ -10,6 +10,8 @@ export default defineNuxtConfig({
       dialect: 'sqlite',
       driver: 'd1-http',
       connection: {
+        accountId: process.env.NUXT_HUB_CLOUDFLARE_ACCOUNT_ID!,
+        token: process.env.NUXT_HUB_CLOUDFLARE_API_TOKEN!,
         databaseId: process.env.NUXT_HUB_CLOUDFLARE_DATABASE_ID!,
       },
     },
