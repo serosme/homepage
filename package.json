@@ -5,8 +5,9 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "generate:db": "nuxt db generate",
     "build": "nuxt build",
-    "dev": "nuxt db generate && nuxt dev",
+    "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
