@@ -5,6 +5,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "ncu": "pnpm dlx npm-check-updates",
+    "ncuu": "pnpm dlx npm-check-updates -u",
     "generate:db": "nuxt db generate",
     "build": "nuxt build",
     "dev": "nuxt dev",
