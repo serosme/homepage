@@ -5,6 +5,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxthub/core', '@nuxt/ui'],
   css: ['~/assets/css/main.css'],
+  ui: {
+    fonts: false,
+  },
   hub: {
     db: {
       dialect: 'sqlite',
