@@ -7,12 +7,12 @@
     "lint:fix": "eslint . --fix",
     "ncu": "pnpm dlx npm-check-updates",
     "ncuu": "pnpm dlx npm-check-updates -u",
+    "typecheck": "nuxt typecheck",
     "generate:db": "nuxt db generate",
-    "build": "nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "build": "nuxt build",
+    "deploy": "cross-env NITRO_PRESET=cloudflare_module pnpm build && wrangler deploy && wrangler d1 migrations apply DB --remote"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
@@ -27,9 +27,11 @@
   "devDependencies": {
     "@antfu/eslint-config": "^9.1.0",
     "@iconify-json/lucide": "^1.2.116",
+    "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.6.0",
     "eslint-plugin-format": "^2.0.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.108.0"
   }
 }
