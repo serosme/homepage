@@ -5,8 +5,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "ncu": "pnpm dlx npm-check-updates",
-    "ncuu": "pnpm dlx npm-check-updates -u",
+    "ncu": "pnpm dlx npm-check-updates --target patch",
+    "ncuu": "pnpm dlx npm-check-updates --target patch -u",
     "typecheck": "nuxt typecheck",
     "generate:db": "nuxt db generate",
     "dev": "nuxt dev",
@@ -15,23 +15,23 @@
     "deploy": "cross-env NITRO_PRESET=cloudflare_module pnpm build && wrangler deploy && wrangler d1 migrations apply DB --remote"
   },
   "dependencies": {
-    "@libsql/client": "^0.17.4",
-    "@nuxt/ui": "^4.9.0",
-    "@nuxthub/core": "0.10.7",
-    "drizzle-orm": "^0.45.2",
-    "nuxt": "^4.4.8",
-    "tailwindcss": "^4.3.2",
-    "vue": "^3.5.39",
-    "vue-router": "^5.1.0"
+    "@libsql/client": "0.17.4",
+    "@nuxt/ui": "4.10.0",
+    "@nuxthub/core": "0.10.8",
+    "drizzle-orm": "0.45.2",
+    "nuxt": "4.4.8",
+    "tailwindcss": "4.3.3",
+    "vue": "3.5.40",
+    "vue-router": "5.2.0"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.1.0",
-    "@iconify-json/lucide": "^1.2.116",
-    "cross-env": "^10.1.0",
-    "drizzle-kit": "^0.31.10",
-    "eslint": "^10.6.0",
-    "eslint-plugin-format": "^2.0.1",
-    "typescript": "^6.0.3",
-    "wrangler": "^4.108.0"
+    "@antfu/eslint-config": "9.1.0",
+    "@iconify-json/lucide": "1.2.118",
+    "cross-env": "10.1.0",
+    "drizzle-kit": "0.31.10",
+    "eslint": "10.7.0",
+    "eslint-plugin-format": "2.0.1",
+    "typescript": "6.0.3",
+    "wrangler": "4.112.0"
   }
 }
