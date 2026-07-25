@@ -3,7 +3,7 @@ import { db, schema } from '@nuxthub/db'
 export default defineEventHandler(async (event) => {
   const body = await readBody<InsertBookmark>(event)
   if (!body.name || !body.type || body.position == null)
-    throw createError({ statusMessage: 'name, type, and position are required' })
+    throw createError({ message: 'name, type, and position are required' })
 
-  return await db.insert(schema.bookmarks).values(body).returning()
+  await db.insert(schema.bookmarks).values(body).run()
 })
