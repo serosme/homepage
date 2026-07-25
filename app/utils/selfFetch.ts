@@ -1,10 +1,15 @@
 export const selfFetch = $fetch.create({
   onResponseError({ response }) {
-    useToast().add({
-      color: 'error',
-      title: response.statusText,
-      description: response._data.message,
-    })
+    if (response.status === 401 && !response.url.includes('/api/auth/')) {
+      navigateTo(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)
+    }
+    else {
+      useToast().add({
+        color: 'error',
+        title: response.statusText,
+        description: response._data.message,
+      })
+    }
   },
   onRequestError({ error }) {
     useToast().add({

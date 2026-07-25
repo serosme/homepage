@@ -9,8 +9,8 @@
     "ncu": "pnpm dlx npm-check-updates --target patch",
     "ncuu": "pnpm dlx npm-check-updates --target patch -u",
     "generate:db": "nuxt db generate",
-    "dev": "nuxt dev",
-    "preview": "nuxt preview",
+    "dev": "cross-env AUTH_PASSWORD=Password@123 nuxt dev",
+    "preview": "cross-env AUTH_PASSWORD=Password@123 nuxt preview",
     "build": "nuxt build",
     "deploy": "cross-env NITRO_PRESET=cloudflare_module pnpm build && wrangler deploy && wrangler d1 migrations apply DB --remote"
   },
@@ -19,6 +19,7 @@
     "@nuxt/ui": "4.10.0",
     "@nuxthub/core": "0.10.8",
     "drizzle-orm": "0.45.2",
+    "jose": "^6.2.4",
     "nuxt": "4.4.8",
     "tailwindcss": "4.3.3",
     "vue": "3.5.40",
