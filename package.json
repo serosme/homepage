@@ -3,11 +3,11 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "typecheck": "nuxt typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "ncu": "pnpm dlx npm-check-updates --target patch",
     "ncuu": "pnpm dlx npm-check-updates --target patch -u",
-    "typecheck": "nuxt typecheck",
     "generate:db": "nuxt db generate",
     "dev": "nuxt dev",
     "preview": "nuxt preview",
@@ -32,6 +32,7 @@
     "eslint": "10.7.0",
     "eslint-plugin-format": "2.0.1",
     "typescript": "6.0.3",
+    "vue-tsc": "3.3.8",
     "wrangler": "4.112.0"
   }
 }
