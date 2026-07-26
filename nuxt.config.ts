@@ -10,4 +10,9 @@ export default defineNuxtConfig({
   hub: {
     db: 'sqlite',
   },
+  app: {
+    head: {
+      title: 'Home',
+    },
+  },
 })
