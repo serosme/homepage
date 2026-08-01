@@ -27,7 +27,12 @@ export function useBookmarks() {
 
   const maxPosition = computed(() => {
     const list = bookmarks.value ?? []
-    return list.length > 0 ? Math.max(...list.map(b => b.position)) : 0
+    let max = 0
+    for (const b of list) {
+      if (b.position > max)
+        max = b.position
+    }
+    return max
   })
 
   const leftTree = computed<TreeItem[]>(() => {
