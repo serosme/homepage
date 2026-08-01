@@ -7,8 +7,8 @@ const redirect = computed(() => {
     : '/'
 })
 
-function onLoggedIn() {
-  navigateTo(redirect.value)
+async function onLoggedIn() {
+  await navigateTo(redirect.value)
 }
 </script>
 
