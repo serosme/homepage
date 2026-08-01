@@ -15,4 +15,12 @@ export default defineNuxtConfig({
       title: 'Home',
     },
   },
+  icon: {
+    provider: 'none',
+    clientBundle: {
+      scan: {
+        globInclude: ['**/*.{vue,jsx,tsx,ts,md,mdc,mdx,yml,yaml}'],
+      },
+    },
+  },
 })
