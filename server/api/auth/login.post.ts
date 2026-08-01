@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const { password } = await readBody<{ password: string }>(event)
 
   if (!checkPassword(password)) {
-    throw createError({ message: 'Wrong password' })
+    throw createError({ statusCode: 400, message: 'Wrong password' })
   }
 
   const token = await signToken()
