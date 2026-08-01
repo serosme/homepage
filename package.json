@@ -9,8 +9,8 @@
     "ncu": "pnpm dlx npm-check-updates --target patch",
     "ncuu": "pnpm dlx npm-check-updates --target patch -u",
     "generate:db": "nuxt db generate",
-    "dev": "cross-env AUTH_PASSWORD=Password@123 nuxt dev",
-    "preview": "cross-env AUTH_PASSWORD=Password@123 nuxt preview",
+    "dev": "cross-env AUTH_SECRET=Password@123 nuxt dev",
+    "preview": "cross-env AUTH_SECRET=Password@123 nuxt preview",
     "build": "nuxt build",
     "deploy": "cross-env NITRO_PRESET=cloudflare_module pnpm build && wrangler deploy && wrangler d1 migrations apply DB --remote"
   },
