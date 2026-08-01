@@ -50,45 +50,40 @@ function validate(state: typeof formState): FormError<string>[] {
 }
 
 async function handleSubmit() {
-  try {
-    if (props.mode === 'create') {
-      const body: InsertBookmark = {
-        type: props.type,
-        name: formState.name,
-        position: (props.maxPosition ?? 0) + 1,
-        parentId: props.parentId,
-      }
-      if (props.type === 'bookmark')
-        body.url = formState.url || undefined
-
-      await selfFetch('/api/bookmarks', {
-        method: 'POST',
-        body,
-      })
-
-      emit('created')
-      emit('update:open', false)
+  if (props.mode === 'create') {
+    const body: InsertBookmark = {
+      type: props.type,
+      name: formState.name,
+      position: (props.maxPosition ?? 0) + 1,
+      parentId: props.parentId,
     }
-    else {
-      const body: InsertBookmark = {
-        type: props.type,
-        name: formState.name,
-        url: props.type === 'bookmark' ? formState.url || undefined : undefined,
-        position: props.item?.position ?? (props.maxPosition ?? 0) + 1,
-        parentId: props.item?.parentId ?? null,
-      }
+    if (props.type === 'bookmark')
+      body.url = formState.url || undefined
 
-      await selfFetch(`/api/bookmarks/${props.item!.id}`, {
-        method: 'PUT',
-        body,
-      })
+    await selfFetch('/api/bookmarks', {
+      method: 'POST',
+      body,
+    })
 
-      emit('updated')
-      emit('update:open', false)
-    }
+    emit('created')
+    emit('update:open', false)
   }
-  catch {
-    // Error toast already handled by selfFetch
+  else {
+    const body: InsertBookmark = {
+      type: props.type,
+      name: formState.name,
+      url: props.type === 'bookmark' ? formState.url || null : undefined,
+      position: props.item?.position ?? (props.maxPosition ?? 0) + 1,
+      parentId: props.item?.parentId ?? null,
+    }
+
+    await selfFetch(`/api/bookmarks/${props.item!.id}`, {
+      method: 'PUT',
+      body,
+    })
+
+    emit('updated')
+    emit('update:open', false)
   }
 }
 </script>
