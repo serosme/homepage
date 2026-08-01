@@ -1,7 +1,7 @@
 export const selfFetch = $fetch.create({
   onResponseError({ response }) {
     if (response.status === 401 && !response.url.includes('/api/auth/')) {
-      navigateTo(`/login?redirect=${encodeURIComponent(window.location.pathname)}`)
+      navigateTo(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`)
     }
     else {
       useToast().add({
