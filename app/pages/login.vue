@@ -1,6 +1,11 @@
 <script setup lang="ts">
 const route = useRoute()
-const redirect = computed(() => (route.query.redirect as string) || '/bookmarks')
+const redirect = computed(() => {
+  const r = route.query.redirect
+  return typeof r === 'string' && r.startsWith('/') && !r.startsWith('//')
+    ? r
+    : '/'
+})
 
 function onLoggedIn() {
   navigateTo(redirect.value)
