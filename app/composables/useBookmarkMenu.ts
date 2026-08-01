@@ -99,12 +99,13 @@ export function useBookmarkMenu(remove: (id: number) => Promise<void>) {
         },
       ],
     ]
-    if (b.url) {
+    const url = b.url
+    if (url) {
       items.unshift([
         {
           label: 'Open in New Tab',
           icon: 'i-lucide-external-link',
-          onSelect() { navigateTo(b.url!, { external: true, open: { target: '_blank' } }) },
+          onSelect() { navigateTo(url, { external: true, open: { target: '_blank' } }) },
         },
       ])
     }
