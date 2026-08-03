@@ -1,18 +1,24 @@
 <script setup lang="ts">
-const { leftTree, rightTree, remove, refresh, maxPosition } = useBookmarks()
-const { createModal, editModal, getMenu } = useBookmarkMenu(remove)
+import type { ContextMenuItem, TreeItem } from '@nuxt/ui'
 
-function create(type: 'folder' | 'bookmark') {
-  createModal.type = type
-  createModal.parentId = undefined
-  createModal.open = true
+const { leftTree, rightTree, refresh, maxPosition } = useBookmarks()
+const bookmarkForm = useBookmarkForm()
+const folderForm = useFolderForm()
+const { remove: removeBookmark } = useDeleteBookmark(refresh)
+const { remove: removeFolder } = useDeleteFolder(refresh)
+const { getMenu: getBookmarkMenu } = useBookmarkMenu(bookmarkForm, removeBookmark)
+const { getMenu: getFolderMenu } = useFolderMenu(bookmarkForm, folderForm, removeFolder)
+
+function getLeftMenu(item: TreeItem): ContextMenuItem[][] {
+  const b = (item as TreeItem & { _bookmark: Bookmark })._bookmark
+  return b.type === 'folder' ? getFolderMenu(item) : getBookmarkMenu(item)
 }
 </script>
 
 <template>
   <div class="px-[25vw] py-[10vh] min-h-screen flex items-stretch">
     <div class="w-1/2 min-w-0">
-      <UContextMenu :items="[[{ label: 'New Folder', icon: 'i-lucide-folder-plus', onSelect: () => create('folder') }]]">
+      <UContextMenu :items="[[{ label: 'New Folder', icon: 'i-lucide-folder-plus', onSelect: () => folderForm.openCreate() }]]">
         <UTree
           :items="leftTree"
           :ui="{
@@ -21,7 +27,7 @@ function create(type: 'folder' | 'bookmark') {
           }"
         >
           <template #item-label="{ item }">
-            <UContextMenu :items="getMenu(item)">
+            <UContextMenu :items="getLeftMenu(item)">
               <div>{{ item.label }}</div>
             </UContextMenu>
           </template>
@@ -29,7 +35,7 @@ function create(type: 'folder' | 'bookmark') {
       </UContextMenu>
     </div>
     <div class="w-1/2 min-w-0">
-      <UContextMenu :items="[[{ label: 'New Bookmark', icon: 'i-lucide-bookmark-plus', onSelect: () => create('bookmark') }]]">
+      <UContextMenu :items="[[{ label: 'New Bookmark', icon: 'i-lucide-bookmark-plus', onSelect: () => bookmarkForm.openCreate() }]]">
         <UTree
           :items="rightTree"
           :ui="{
@@ -37,7 +43,7 @@ function create(type: 'folder' | 'bookmark') {
           }"
         >
           <template #item-label="{ item }">
-            <UContextMenu :items="getMenu(item)">
+            <UContextMenu :items="getBookmarkMenu(item)">
               <div>{{ item.label }}</div>
             </UContextMenu>
           </template>
@@ -45,18 +51,21 @@ function create(type: 'folder' | 'bookmark') {
       </UContextMenu>
     </div>
     <BookmarkFormModal
-      v-model:open="createModal.open"
-      mode="create"
-      :type="createModal.type"
-      :parent-id="createModal.parentId"
+      v-model:open="bookmarkForm.modal.open"
+      :mode="bookmarkForm.modal.mode"
+      :parent-id="bookmarkForm.modal.parentId"
+      :item="bookmarkForm.modal.item"
       :max-position="maxPosition"
       @created="refresh"
+      @updated="refresh"
     />
-    <BookmarkFormModal
-      v-model:open="editModal.open"
-      mode="edit"
-      :type="editModal.type"
-      :item="editModal.item"
+    <FolderFormModal
+      v-model:open="folderForm.modal.open"
+      :mode="folderForm.modal.mode"
+      :parent-id="folderForm.modal.parentId"
+      :item="folderForm.modal.item"
+      :max-position="maxPosition"
+      @created="refresh"
       @updated="refresh"
     />
   </div>

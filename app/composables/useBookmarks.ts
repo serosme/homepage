@@ -49,17 +49,10 @@ export function useBookmarks() {
     ).sort((a, b) => a.position - b.position).map(toTreeItem)
   })
 
-  async function remove(id: number) {
-    await selfFetch(`/api/bookmarks/${id}`, { method: 'DELETE' })
-    refresh()
-  }
-
   return {
     leftTree,
     rightTree,
     maxPosition,
-    bookmarks,
     refresh,
-    remove,
   }
 }

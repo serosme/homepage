@@ -14,7 +14,7 @@ function getSecret() {
 
 export async function signToken(): Promise<string> {
   if (!password)
-    throw createError({ statusCode: 400, message: 'AUTH_SECRET is not configured' })
+    throw createError({ statusCode: 400, message: 'Secret is not configured' })
   return await new SignJWT({})
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()

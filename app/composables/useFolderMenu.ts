@@ -4,18 +4,31 @@ function getBookmark(item: TreeItem): Bookmark {
   return (item as TreeItem & { _bookmark: Bookmark })._bookmark
 }
 
-export function useBookmarkMenu(
+export function useFolderMenu(
   bookmarkForm: ReturnType<typeof useBookmarkForm>,
+  folderForm: ReturnType<typeof useFolderForm>,
   remove: (id: number) => Promise<void>,
 ) {
   function getMenu(item: TreeItem): ContextMenuItem[][] {
     const b = getBookmark(item)
-    const items: ContextMenuItem[][] = [
+    return [
+      [
+        {
+          label: 'New Folder',
+          icon: 'i-lucide-folder-plus',
+          onSelect() { folderForm.openCreate(b.id) },
+        },
+        {
+          label: 'New Bookmark',
+          icon: 'i-lucide-bookmark-plus',
+          onSelect() { bookmarkForm.openCreate(b.id) },
+        },
+      ],
       [
         {
           label: 'Edit',
           icon: 'i-lucide-pencil',
-          onSelect() { bookmarkForm.openEdit(b) },
+          onSelect() { folderForm.openEdit(b) },
         },
         {
           label: 'Delete',
@@ -25,17 +38,6 @@ export function useBookmarkMenu(
         },
       ],
     ]
-    const url = b.url
-    if (url) {
-      items.unshift([
-        {
-          label: 'Open in New Tab',
-          icon: 'i-lucide-external-link',
-          onSelect() { navigateTo(url, { external: true, open: { target: '_blank' } }) },
-        },
-      ])
-    }
-    return items
   }
 
   return { getMenu }

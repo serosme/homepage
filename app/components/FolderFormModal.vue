@@ -15,23 +15,18 @@ const emit = defineEmits<{
   'updated': []
 }>()
 
-const title = computed(() => props.mode === 'create' ? 'New Bookmark' : 'Edit Bookmark')
+const title = computed(() => props.mode === 'create' ? 'New Folder' : 'Edit Folder')
 
 const formState = reactive({
   name: '',
-  url: '',
 })
 
 watch(() => props.open, (open) => {
   if (open) {
-    if (props.mode === 'edit' && props.item) {
+    if (props.mode === 'edit' && props.item)
       formState.name = props.item.name
-      formState.url = props.item.url ?? ''
-    }
-    else {
+    else
       formState.name = ''
-      formState.url = ''
-    }
   }
 })
 
@@ -39,17 +34,14 @@ function validate(state: typeof formState): FormError<string>[] {
   const errors: FormError<string>[] = []
   if (!state.name)
     errors.push({ name: 'name', message: 'Name is required' })
-  if (!state.url)
-    errors.push({ name: 'url', message: 'URL is required' })
   return errors
 }
 
 async function handleSubmit() {
   if (props.mode === 'create') {
     const body: InsertBookmark = {
-      type: 'bookmark',
+      type: 'folder',
       name: formState.name,
-      url: formState.url || undefined,
       position: (props.maxPosition ?? 0) + 1,
       parentId: props.parentId,
     }
@@ -64,9 +56,8 @@ async function handleSubmit() {
   }
   else {
     const body: InsertBookmark = {
-      type: 'bookmark',
+      type: 'folder',
       name: formState.name,
-      url: formState.url || null,
       position: props.item?.position ?? (props.maxPosition ?? 0) + 1,
       parentId: props.item?.parentId ?? null,
     }
@@ -88,9 +79,6 @@ async function handleSubmit() {
       <UForm :state="formState" class="space-y-4" :validate="validate" @submit="handleSubmit">
         <UFormField label="Name" name="name" required>
           <UInput v-model="formState.name" class="w-full" />
-        </UFormField>
-        <UFormField label="URL" name="url" required>
-          <UInput v-model="formState.url" class="w-full" />
         </UFormField>
         <UButton type="submit">
           {{ mode === 'create' ? 'Create' : 'Save' }}
