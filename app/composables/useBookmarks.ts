@@ -23,10 +23,10 @@ function toTreeItem(b: Bookmark) {
 }
 
 export function useBookmarks() {
-  const { data: bookmarks, refresh } = useSelfFetch<Bookmark[]>('/api/bookmarks')
+  const { data, refresh } = useSelfFetch<Bookmark[]>('/api/bookmarks')
 
   const maxPosition = computed(() => {
-    const list = bookmarks.value ?? []
+    const list = data.value ?? []
     let max = 0
     for (const b of list) {
       if (b.position > max)
@@ -36,7 +36,7 @@ export function useBookmarks() {
   })
 
   const leftTree = computed<TreeItem[]>(() => {
-    const filtered = (bookmarks.value ?? []).filter(b =>
+    const filtered = (data.value ?? []).filter(b =>
       b.type === 'folder' || (b.type === 'bookmark' && b.parentId !== null),
     )
     const sorted = sortBookmarks(filtered)
@@ -44,7 +44,7 @@ export function useBookmarks() {
   })
 
   const rightTree = computed<TreeItem[]>(() => {
-    return (bookmarks.value ?? []).filter(b =>
+    return (data.value ?? []).filter(b =>
       b.type === 'bookmark' && b.parentId === null,
     ).sort((a, b) => a.position - b.position).map(toTreeItem)
   })

@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-Nuxt 4 书签管理应用：密码登录（单用户）+ 左右分栏展示文件夹树（左）和根级书签（右），支持右键菜单创建/编辑/删除，使用 Nuxt UI v4、Nuxt Hub、Drizzle ORM + SQLite/Cloudflare D1、Tailwind CSS v4、TypeScript 6。
+Nuxt 4 书签管理应用：密码登录（单用户）+ 左右分栏展示文件夹树（左）和根级书签（右），节点行右侧三个点下拉菜单创建/编辑/删除，两棵树底部有新建虚拟项，使用 Nuxt UI v4、Nuxt Hub、Drizzle ORM + SQLite/Cloudflare D1、Tailwind CSS v4、TypeScript 6。
 
 ## 命令
 
@@ -39,11 +39,11 @@ app/                    前端页面与应用代码
 │   ├── useFolderForm.ts       文件夹弹窗状态管理（openCreate/openEdit）
 │   ├── useDeleteBookmark.ts   书签删除（DELETE + refresh + toast）
 │   ├── useDeleteFolder.ts     文件夹删除（DELETE + refresh + toast）
-│   ├── useBookmarkMenu.ts     书签右键菜单（打开/编辑/删除）
-│   └── useFolderMenu.ts       文件夹右键菜单（新建×2/编辑/删除）
+│   ├── useBookmarkMenu.ts     书签下拉菜单（打开/编辑/删除）
+│   └── useFolderMenu.ts       文件夹下拉菜单（新建×2/编辑/删除）
 ├── pages/
 │   ├── index.vue              重定向到 /bookmarks
-│   ├── bookmarks.vue          主页面（左右分栏布局，组装全部 composable，左树菜单按节点类型分派）
+│   ├── bookmarks.vue          主页面（左右分栏布局，组装全部 composable，item-trailing 插槽渲染三个点下拉菜单，左树菜单按节点类型分派，树底部追加新建虚拟项且默认透明 hover 显示）
 │   └── login.vue              登录页（redirect 查询参数回跳）
 └── utils/
     ├── bookmark-tree.ts       排序与树结构构建工具函数
@@ -128,4 +128,4 @@ shared/                 前后端共享代码
 
 - Nuxt UI MCP 已配置在 `opencode.json` 中，可直接查询组件文档
 - 图标使用 `@iconify-json/lucide` 集，格式如 `i-lucide-*`
-- 项目实际使用的组件：`UApp`、`UModal`、`UForm`、`UTree`、`UContextMenu`、`UInput`、`UButton`、`UFormField`、`UToast`、`UAuthForm`
+- 项目实际使用的组件：`UApp`、`UModal`、`UForm`、`UTree`、`UDropdownMenu`、`UInput`、`UButton`、`UFormField`、`UToast`、`UAuthForm`

@@ -1,54 +1,88 @@
 <script setup lang="ts">
-import type { ContextMenuItem, TreeItem } from '@nuxt/ui'
+import type { DropdownMenuItem, TreeItem } from '@nuxt/ui'
 
-const { leftTree, rightTree, refresh, maxPosition } = useBookmarks()
 const bookmarkForm = useBookmarkForm()
 const folderForm = useFolderForm()
+const { leftTree, rightTree, refresh, maxPosition } = useBookmarks()
 const { remove: removeBookmark } = useDeleteBookmark(refresh)
 const { remove: removeFolder } = useDeleteFolder(refresh)
 const { getMenu: getBookmarkMenu } = useBookmarkMenu(bookmarkForm, removeBookmark)
 const { getMenu: getFolderMenu } = useFolderMenu(bookmarkForm, folderForm, removeFolder)
 
-function getLeftMenu(item: TreeItem): ContextMenuItem[][] {
+function getLeftMenu(item: TreeItem): DropdownMenuItem[][] {
   const b = (item as TreeItem & { _bookmark: Bookmark })._bookmark
   return b.type === 'folder' ? getFolderMenu(item) : getBookmarkMenu(item)
 }
+
+function getItemKey(item: TreeItem): string {
+  return String((item as TreeItem & { id: number | string }).id)
+}
+
+const addFolderItem: TreeItem & { id: string } = {
+  id: 'add-folder',
+  label: 'New Folder',
+  icon: 'i-lucide-folder-plus',
+  onSelect: () => folderForm.openCreate(),
+  class: 'opacity-0 hover:opacity-100 transition-opacity',
+}
+
+const addBookmarkItem: TreeItem & { id: string } = {
+  id: 'add-bookmark',
+  label: 'New Bookmark',
+  icon: 'i-lucide-bookmark-plus',
+  onSelect: () => bookmarkForm.openCreate(),
+  class: 'opacity-0 hover:opacity-100 transition-opacity',
+}
+
+const leftTreeWithAdd = computed<TreeItem[]>(() => [...leftTree.value, addFolderItem])
+const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBookmarkItem])
 </script>
 
 <template>
   <div class="px-[25vw] py-[10vh] min-h-screen flex items-stretch">
     <div class="w-1/2 min-w-0">
-      <UContextMenu :items="[[{ label: 'New Folder', icon: 'i-lucide-folder-plus', onSelect: () => folderForm.openCreate() }]]">
-        <UTree
-          :items="leftTree"
-          :ui="{
-            link: 'truncate cursor-pointer before:bg-transparent text-inherit',
-            linkTrailing: 'hidden',
-          }"
-        >
-          <template #item-label="{ item }">
-            <UContextMenu :items="getLeftMenu(item)">
-              <div>{{ item.label }}</div>
-            </UContextMenu>
-          </template>
-        </UTree>
-      </UContextMenu>
+      <UTree
+        :items="leftTreeWithAdd"
+        :get-key="getItemKey"
+        :ui="{
+          link: 'group truncate cursor-pointer before:bg-transparent text-inherit',
+        }"
+      >
+        <template #item-trailing="{ item }">
+          <UDropdownMenu v-if="'_bookmark' in item" :items="getLeftMenu(item)" :content="{ align: 'end' }">
+            <UButton
+              icon="i-lucide-ellipsis-vertical"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              class="opacity-0 transition-opacity group-hover:opacity-100"
+              @click.stop
+            />
+          </UDropdownMenu>
+        </template>
+      </UTree>
     </div>
     <div class="w-1/2 min-w-0">
-      <UContextMenu :items="[[{ label: 'New Bookmark', icon: 'i-lucide-bookmark-plus', onSelect: () => bookmarkForm.openCreate() }]]">
-        <UTree
-          :items="rightTree"
-          :ui="{
-            link: 'truncate cursor-pointer before:bg-transparent text-inherit',
-          }"
-        >
-          <template #item-label="{ item }">
-            <UContextMenu :items="getBookmarkMenu(item)">
-              <div>{{ item.label }}</div>
-            </UContextMenu>
-          </template>
-        </UTree>
-      </UContextMenu>
+      <UTree
+        :items="rightTreeWithAdd"
+        :get-key="getItemKey"
+        :ui="{
+          link: 'group truncate cursor-pointer before:bg-transparent text-inherit',
+        }"
+      >
+        <template #item-trailing="{ item }">
+          <UDropdownMenu v-if="'_bookmark' in item" :items="getBookmarkMenu(item)" :content="{ align: 'end' }">
+            <UButton
+              icon="i-lucide-ellipsis-vertical"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              class="opacity-0 transition-opacity group-hover:opacity-100"
+              @click.stop
+            />
+          </UDropdownMenu>
+        </template>
+      </UTree>
     </div>
     <BookmarkFormModal
       v-model:open="bookmarkForm.modal.open"

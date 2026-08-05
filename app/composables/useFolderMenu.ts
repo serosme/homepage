@@ -1,4 +1,4 @@
-import type { ContextMenuItem, TreeItem } from '@nuxt/ui'
+import type { DropdownMenuItem, TreeItem } from '@nuxt/ui'
 
 function getBookmark(item: TreeItem): Bookmark {
   return (item as TreeItem & { _bookmark: Bookmark })._bookmark
@@ -9,7 +9,7 @@ export function useFolderMenu(
   folderForm: ReturnType<typeof useFolderForm>,
   remove: (id: number) => Promise<void>,
 ) {
-  function getMenu(item: TreeItem): ContextMenuItem[][] {
+  function getMenu(item: TreeItem): DropdownMenuItem[][] {
     const b = getBookmark(item)
     return [
       [
