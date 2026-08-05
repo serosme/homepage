@@ -7,3 +7,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - miniflare@4.20260706.0
   - wrangler@4.108.0
+  - jose@6.2.8
