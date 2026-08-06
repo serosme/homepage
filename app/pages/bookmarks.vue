@@ -23,7 +23,7 @@ const addFolderItem: TreeItem & { id: string } = {
   label: 'New Folder',
   icon: 'i-lucide-folder-plus',
   onSelect: () => folderForm.openCreate(),
-  class: 'opacity-0 hover:opacity-100 hover:delay-[500ms] transition-opacity',
+  class: 'opacity-0 hover:opacity-100 hover:delay-500 transition-opacity',
 }
 
 const addBookmarkItem: TreeItem & { id: string } = {
@@ -31,7 +31,7 @@ const addBookmarkItem: TreeItem & { id: string } = {
   label: 'New Bookmark',
   icon: 'i-lucide-bookmark-plus',
   onSelect: () => bookmarkForm.openCreate(),
-  class: 'opacity-0 hover:opacity-100 hover:delay-[500ms] transition-opacity',
+  class: 'opacity-0 hover:opacity-100 hover:delay-500 transition-opacity',
 }
 
 const leftTreeWithAdd = computed<TreeItem[]>(() => [...leftTree.value, addFolderItem])
@@ -53,9 +53,9 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
             <UButton
               icon="i-lucide-ellipsis-vertical"
               color="neutral"
-              variant="ghost"
+              variant="link"
               size="xs"
-              class="opacity-0 transition-opacity group-hover:opacity-100"
+              class="opacity-0 transition-opacity group-hover:opacity-100 group-hover:delay-500"
               @click.stop
             />
           </UDropdownMenu>
@@ -75,9 +75,9 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
             <UButton
               icon="i-lucide-ellipsis-vertical"
               color="neutral"
-              variant="ghost"
+              variant="link"
               size="xs"
-              class="opacity-0 transition-opacity group-hover:opacity-100"
+              class="opacity-0 transition-opacity group-hover:opacity-100 group-hover:delay-500"
               @click.stop
             />
           </UDropdownMenu>
