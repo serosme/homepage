@@ -12,6 +12,7 @@
     "dev": "cross-env AUTH_SECRET=Password@123 nuxt dev",
     "preview": "cross-env AUTH_SECRET=Password@123 nuxt preview",
     "build": "nuxt build",
+    "backup": "wrangler d1 export homepage-db --remote --output ./db.sql",
     "deploy": "cross-env NITRO_PRESET=cloudflare_module nuxt build && wrangler deploy && wrangler d1 migrations apply DB --remote"
   },
   "dependencies": {
