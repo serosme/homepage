@@ -23,7 +23,7 @@ const addFolderItem: TreeItem & { id: string } = {
   label: 'New Folder',
   icon: 'i-lucide-folder-plus',
   onSelect: () => folderForm.openCreate(),
-  class: 'opacity-0 hover:opacity-100 transition-opacity',
+  class: 'opacity-0 hover:opacity-100 hover:delay-[500ms] transition-opacity',
 }
 
 const addBookmarkItem: TreeItem & { id: string } = {
@@ -31,7 +31,7 @@ const addBookmarkItem: TreeItem & { id: string } = {
   label: 'New Bookmark',
   icon: 'i-lucide-bookmark-plus',
   onSelect: () => bookmarkForm.openCreate(),
-  class: 'opacity-0 hover:opacity-100 transition-opacity',
+  class: 'opacity-0 hover:opacity-100 hover:delay-[500ms] transition-opacity',
 }
 
 const leftTreeWithAdd = computed<TreeItem[]>(() => [...leftTree.value, addFolderItem])
@@ -39,13 +39,13 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
 </script>
 
 <template>
-  <div class="px-[25vw] py-[10vh] min-h-screen flex items-stretch">
+  <div class="pl-[28vw] pr-[22vw] py-[10vh] min-h-screen flex">
     <div class="w-1/2 min-w-0">
       <UTree
         :items="leftTreeWithAdd"
         :get-key="getItemKey"
         :ui="{
-          link: 'group truncate cursor-pointer before:bg-transparent text-inherit',
+          link: 'hover:text-inherit hover:before:bg-transparent before:bg-inherit text-inherit',
         }"
       >
         <template #item-trailing="{ item }">
@@ -67,7 +67,7 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
         :items="rightTreeWithAdd"
         :get-key="getItemKey"
         :ui="{
-          link: 'group truncate cursor-pointer before:bg-transparent text-inherit',
+          link: 'hover:text-inherit hover:before:bg-transparent before:bg-inherit text-inherit',
         }"
       >
         <template #item-trailing="{ item }">
