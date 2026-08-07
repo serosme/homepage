@@ -17,10 +17,12 @@ Nuxt 4 书签管理应用：密码登录（单用户）+ 左右分栏展示文�
 | `pnpm ncu`         | 检查依赖更新                   |
 | `pnpm ncuu`        | 一键更新依赖                   |
 | `pnpm generate:db` | Drizzle 数据库迁移生成         |
+| `pnpm backup`      | 导出远程 D1 到 db.sql          |
 | `pnpm deploy`      | 部署到 Cloudflare Workers + D1 |
 
 - 包管理器为 `pnpm`（锁定在 pnpm-lock.yaml，workspace 配置在 pnpm-workspace.yaml）
 - `pnpm dev` 启动后支持 HMR，修改前端代码无需重新构建或重启
+- 本地 `AUTH_SECRET` 配置在 `.env`（已被 gitignore），模板见 `.env.example`
 - 无测试框架，无 CI 配置
 
 ## 项目结构
@@ -73,8 +75,8 @@ shared/                 前后端共享代码
 | ------ | -------------------- | -------------------------------------------------------------- |
 | POST   | `/api/auth/login`    | 密码登录（body: password），成功设置 token cookie（httpOnly）  |
 | GET    | `/api/bookmarks`     | 获取所有书签（按 position 排序）                               |
-| POST   | `/api/bookmarks`     | 创建书签/文件夹（body: name, type, position 必填）             |
-| PUT    | `/api/bookmarks/:id` | 更新书签/文件夹（parentId 不能等于自身 id）                    |
+| POST   | `/api/bookmarks`     | 创建书签/文件夹（body: name, type, position，数据库非空约束）  |
+| PUT    | `/api/bookmarks/:id` | 更新书签/文件夹（parentId 不能等于自身 id；不存在返回 400）    |
 | DELETE | `/api/bookmarks/:id` | 删除；非空文件夹返回 400 'Folder is not empty'，不存在返回 400 |
 
 除 `/api/auth/login` 外所有 API 均需登录（`server/middleware/auth.ts` 校验 token）。
@@ -82,7 +84,9 @@ shared/                 前后端共享代码
 ## 数据库
 
 - 开发环境使用本地 SQLite（由 `@nuxthub/core` 自动处理），无需配置环境变量
-- 生产环境为 Cloudflare D1，连接配置在 `nuxt.config.ts` 中（需设置环境变量 `NUXT_HUB_CLOUDFLARE_ACCOUNT_ID`、`NUXT_HUB_CLOUDFLARE_API_TOKEN`、`NUXT_HUB_CLOUDFLARE_DATABASE_ID`）
+- 生产环境为 Cloudflare D1：构建时 `NITRO_PRESET=cloudflare_module` 使 `hub.db` 自动切换 `d1` driver
+- D1 绑定在 `wrangler.jsonc` 中通过 `database_name` 按名声明（binding 名 `DB`，无需维护 UUID），构建时 nitro 合并进 `.output/server/wrangler.json`，并由 `@nuxthub/core` 自动补充 `migrations_table`/`migrations_dir`
+- D1 binding 模式（driver `d1`）不需要 `NUXT_HUB_CLOUDFLARE_*` 环境变量（那是 `d1-http` driver 才需要）
 - Drizzle Kit 无独立配置文件，由 `@nuxthub/core` 自动处理
 - 迁移文件位于 `server/db/migrations/sqlite/`
 
@@ -111,6 +115,7 @@ shared/                 前后端共享代码
 - VS Code 中 style/format 类规则设为 `"off"`（由 ESLint 自动修复处理），引号和分号规则也由 ESLint 自动修复
 - 不支持 Prettier（在 `.vscode/settings.json` 中禁用）
 - 保存时自动执行 ESLint 修复
+- `pnpm-workspace.yaml` 有 2 个预存 lint 错误（`shellEmulator`/`trustPolicy` 设置不匹配），非代码问题，可忽略
 
 ## 工作流程
 
@@ -121,8 +126,12 @@ shared/                 前后端共享代码
 ## 部署
 
 - 使用 Cloudflare Workers + D1 部署
-- D1 数据库绑定配置在 `wrangler.jsonc` 中
-- 部署命令 `pnpm deploy` 执行：构建 Nitro preset `cloudflare_module` → `wrangler deploy` → 应用 D1 迁移
+- D1 绑定在 `wrangler.jsonc` 中声明，构建时 nitro 合并到 `.output/server/wrangler.json`
+- 部署命令 `pnpm deploy` 执行：构建 Nitro preset `cloudflare_module` → `wrangler deploy --keep-vars` → 应用 D1 迁移（`wrangler --config .output/server/wrangler.json d1 migrations apply DB --remote`）
+- `wrangler deploy` 从根目录运行，经 `.wrangler/deploy/config.json` 重定向到 `.output/server/wrangler.json`；迁移命令需显式 `--config .output/server/wrangler.json`（`migrations_dir` 为相对该文件的 `db/migrations/sqlite/`）
+- 部署前提：wrangler 已认证（`wrangler login`，或设置 `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` 环境变量）
+- `AUTH_SECRET` 需一次性执行 `wrangler secret put AUTH_SECRET` 设置生产密码（与本地 `.env` 中的值独立，`--keep-vars` 不会覆盖 secrets）
+- `pnpm backup` 导出远程 D1 到 `db.sql`（已被 gitignore），经 binding `DB` 从根 `wrangler.jsonc` 解析库名，不依赖构建产物
 
 ## Nuxt UI
 

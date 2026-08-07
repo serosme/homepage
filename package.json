@@ -9,11 +9,11 @@
     "ncu": "pnpm dlx npm-check-updates --target patch",
     "ncuu": "pnpm dlx npm-check-updates --target patch -u",
     "generate:db": "nuxt db generate",
-    "dev": "cross-env AUTH_SECRET=Password@123 nuxt dev",
-    "preview": "cross-env AUTH_SECRET=Password@123 nuxt preview",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
     "build": "nuxt build",
-    "backup": "wrangler d1 export homepage-db --remote --output ./db.sql",
-    "deploy": "cross-env NITRO_PRESET=cloudflare_module nuxt build && wrangler deploy && wrangler d1 migrations apply DB --remote"
+    "backup": "wrangler d1 export DB --remote --output ./db.sql",
+    "deploy": "NITRO_PRESET=cloudflare_module nuxt build && wrangler deploy --keep-vars && wrangler --config .output/server/wrangler.json d1 migrations apply DB --remote"
   },
   "dependencies": {
     "@libsql/client": "0.17.4",
@@ -29,7 +29,6 @@
   "devDependencies": {
     "@antfu/eslint-config": "9.3.0",
     "@iconify-json/lucide": "1.2.121",
-    "cross-env": "10.1.0",
     "drizzle-kit": "0.31.10",
     "eslint": "10.8.0",
     "eslint-plugin-format": "2.0.1",

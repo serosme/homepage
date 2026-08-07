@@ -3,9 +3,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_id": "353b9b39-d59b-4e14-8c00-a22c1e0ba254",
-      "migrations_table": "_hub_migrations",
-      "migrations_dir": ".output/server/db/migrations/sqlite/"
+      "database_name": "homepage-db"
     }
   ]
 }
