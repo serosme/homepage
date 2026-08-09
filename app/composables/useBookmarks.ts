@@ -4,7 +4,7 @@ import { buildTree, sortBookmarks } from '~/utils/bookmark-tree'
 function toTreeItem(b: Bookmark) {
   const item = {
     id: b.id,
-    parentId: b.parentId as number | null,
+    parentId: b.parentId,
     label: b.name,
     _bookmark: b,
     icon: undefined as string | undefined,
@@ -23,17 +23,9 @@ function toTreeItem(b: Bookmark) {
 }
 
 export function useBookmarks() {
-  const { data, refresh } = useSelfFetch<Bookmark[]>('/api/bookmarks')
+  const { data, refresh } = useSelfFetch<BookmarkWithAncestors[]>('/api/bookmarks')
 
-  const maxPosition = computed(() => {
-    const list = data.value ?? []
-    let max = 0
-    for (const b of list) {
-      if (b.position > max)
-        max = b.position
-    }
-    return max
-  })
+  const maxPosition = computed(() => (data.value ?? []).reduce((max, b) => Math.max(max, b.position), 0))
 
   const leftTree = computed<TreeItem[]>(() => {
     const filtered = (data.value ?? []).filter(b =>
@@ -46,10 +38,11 @@ export function useBookmarks() {
   const rightTree = computed<TreeItem[]>(() => {
     return (data.value ?? []).filter(b =>
       b.type === 'bookmark' && b.parentId === null,
-    ).sort((a, b) => a.position - b.position).map(toTreeItem)
+    ).map(toTreeItem)
   })
 
   return {
+    data,
     leftTree,
     rightTree,
     maxPosition,

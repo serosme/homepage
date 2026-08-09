@@ -34,9 +34,10 @@ app/                    前端页面与应用代码
 ├── components/
 │   ├── BookmarkFormModal.vue  书签新增/编辑弹窗（create/edit 双模式）
 │   ├── FolderFormModal.vue    文件夹新增/编辑弹窗（create/edit 双模式）
-│   └── LoginForm.vue          登录表单（UAuthForm，密码登录）
+│   ├── LoginForm.vue          登录表单（UAuthForm，密码登录）
+│   └── SearchPalette.vue      书签搜索弹窗（右下角悬浮搜索按钮 + UModal + UCommandPalette，bookmarks 由页面以 prop 注入，仅匹配 name/URL，选中 emit reveal 由页面定位到树中，打开时重挂载自动清空搜索词）
 ├── composables/
-│   ├── useBookmarks.ts        书签数据获取与树结构构建
+│   ├── useBookmarks.ts        书签数据获取与树结构构建（含原始 data）
 │   ├── useBookmarkForm.ts     书签弹窗状态管理（openCreate/openEdit）
 │   ├── useFolderForm.ts       文件夹弹窗状态管理（openCreate/openEdit）
 │   ├── useDeleteBookmark.ts   书签删除（DELETE + refresh + toast）
@@ -45,7 +46,7 @@ app/                    前端页面与应用代码
 │   └── useFolderMenu.ts       文件夹下拉菜单（新建×2/编辑/删除）
 ├── pages/
 │   ├── index.vue              重定向到 /bookmarks
-│   ├── bookmarks.vue          主页面（左右分栏布局，组装全部 composable，item-trailing 插槽渲染三个点下拉菜单，左树菜单按节点类型分派，树底部追加新建虚拟项且默认透明 hover 显示）
+│   ├── bookmarks.vue          主页面（左右分栏布局，组装全部 composable，item-trailing 插槽渲染三个点下拉菜单，左树菜单按节点类型分派，树底部追加新建虚拟项且默认透明 hover 显示，左树受控 expanded + 两树选中态支持搜索定位，挂载 SearchPalette）
 │   └── login.vue              登录页（redirect 查询参数回跳）
 └── utils/
     ├── bookmark-tree.ts       排序与树结构构建工具函数
@@ -66,7 +67,7 @@ server/                 服务端代码
 └── utils/
     └── jwt.ts           JWT 签发/验证（jose，密钥为环境变量 AUTH_SECRET）
 shared/                 前后端共享代码
-└── types/db.ts          数据库类型（Bookmark, InsertBookmark）
+└── types/db.ts          数据库类型（Bookmark, InsertBookmark, BookmarkWithAncestors）
 ```
 
 ## API 端点
@@ -74,12 +75,12 @@ shared/                 前后端共享代码
 | 方法   | 路径                 | 说明                                                           |
 | ------ | -------------------- | -------------------------------------------------------------- |
 | POST   | `/api/auth/login`    | 密码登录（body: password），成功设置 token cookie（httpOnly）  |
-| GET    | `/api/bookmarks`     | 获取所有书签（按 position 排序）                               |
+| GET    | `/api/bookmarks`     | 获取所有书签（按 position 排序，附加 ancestorIds 祖先链）      |
 | POST   | `/api/bookmarks`     | 创建书签/文件夹（body: name, type, position，数据库非空约束）  |
 | PUT    | `/api/bookmarks/:id` | 更新书签/文件夹（parentId 不能等于自身 id；不存在返回 400）    |
 | DELETE | `/api/bookmarks/:id` | 删除；非空文件夹返回 400 'Folder is not empty'，不存在返回 400 |
 
-除 `/api/auth/login` 外所有 API 均需登录（`server/middleware/auth.ts` 校验 token）。
+除 `/api/auth/login` 外所有 API 均需登录（`server/middleware/auth.ts` 校验 token）。`ancestorIds` 为祖先文件夹 id 数组，根在前、直系父级在最后，根级书签为空数组。
 
 ## 数据库
 

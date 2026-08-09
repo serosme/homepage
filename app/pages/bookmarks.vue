@@ -3,11 +3,39 @@ import type { DropdownMenuItem, TreeItem } from '@nuxt/ui'
 
 const bookmarkForm = useBookmarkForm()
 const folderForm = useFolderForm()
-const { leftTree, rightTree, refresh, maxPosition } = useBookmarks()
+const { leftTree, rightTree, refresh, maxPosition, data: bookmarks } = useBookmarks()
 const { remove: removeBookmark } = useDeleteBookmark(refresh)
 const { remove: removeFolder } = useDeleteFolder(refresh)
 const { getMenu: getBookmarkMenu } = useBookmarkMenu(bookmarkForm, removeBookmark)
 const { getMenu: getFolderMenu } = useFolderMenu(bookmarkForm, folderForm, removeFolder)
+
+const leftExpandedKeys = ref<string[]>([])
+const leftSelected = ref<TreeItem>()
+const rightSelected = ref<TreeItem>()
+const leftTreeEl = ref<{ $el: HTMLElement }>()
+const rightTreeEl = ref<{ $el: HTMLElement }>()
+
+const treeLinkUi = { link: 'hover:text-inherit text-inherit' }
+
+function handleReveal(target: BookmarkWithAncestors) {
+  const selected = { id: target.id }
+  const isRoot = target.parentId == null
+
+  if (isRoot) {
+    rightSelected.value = selected
+    leftSelected.value = undefined
+  }
+  else {
+    leftSelected.value = selected
+    rightSelected.value = undefined
+    leftExpandedKeys.value = [...new Set([...leftExpandedKeys.value, ...target.ancestorIds.map(String)])]
+  }
+
+  const treeEl = isRoot ? rightTreeEl : leftTreeEl
+  nextTick(() => {
+    treeEl.value?.$el.querySelector<HTMLElement>('[data-selected]')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  })
+}
 
 function getLeftMenu(item: TreeItem): DropdownMenuItem[][] {
   const b = (item as TreeItem & { _bookmark: Bookmark })._bookmark
@@ -42,11 +70,12 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
   <div class="pl-[28vw] pr-[22vw] py-[10vh] min-h-screen flex">
     <div class="w-1/2 min-w-0">
       <UTree
+        ref="leftTreeEl"
+        v-model="leftSelected"
+        v-model:expanded="leftExpandedKeys"
         :items="leftTreeWithAdd"
         :get-key="getItemKey"
-        :ui="{
-          link: 'hover:text-inherit hover:before:bg-transparent before:bg-inherit text-inherit',
-        }"
+        :ui="treeLinkUi"
       >
         <template #item-trailing="{ item }">
           <UDropdownMenu v-if="'_bookmark' in item" :items="getLeftMenu(item)" :content="{ align: 'end' }">
@@ -64,11 +93,11 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
     </div>
     <div class="w-1/2 min-w-0">
       <UTree
+        ref="rightTreeEl"
+        v-model="rightSelected"
         :items="rightTreeWithAdd"
         :get-key="getItemKey"
-        :ui="{
-          link: 'hover:text-inherit hover:before:bg-transparent before:bg-inherit text-inherit',
-        }"
+        :ui="treeLinkUi"
       >
         <template #item-trailing="{ item }">
           <UDropdownMenu v-if="'_bookmark' in item" :items="getBookmarkMenu(item)" :content="{ align: 'end' }">
@@ -102,5 +131,6 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
       @created="refresh"
       @updated="refresh"
     />
+    <SearchPalette :bookmarks="bookmarks ?? []" @reveal="handleReveal" />
   </div>
 </template>
