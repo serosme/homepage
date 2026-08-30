@@ -15,7 +15,6 @@ Nuxt 4 书签管理应用：密码登录（单用户）+ 左右分栏展示文�
 | `pnpm lint:fix`    | ESLint 自动修复                |
 | `pnpm typecheck`   | TypeScript 类型检查            |
 | `pnpm ncu`         | 检查依赖更新                   |
-| `pnpm ncuu`        | 一键更新依赖                   |
 | `pnpm generate:db` | Drizzle 数据库迁移生成         |
 | `pnpm backup`      | 导出远程 D1 到 db.sql          |
 | `pnpm deploy`      | 部署到 Cloudflare Workers + D1 |
@@ -120,7 +119,7 @@ shared/                 前后端共享代码
 
 ## 工作流程
 
-- 每次修改代码后，必须执行 `pnpm lint` 和 `pnpm typecheck`，根据输出完善代码直至无报错
+- 每次修改代码后，必须执行 `pnpm lint` 和 `pnpm typecheck`；除上述 2 个预存 lint 错误外，不得新增错误
 - 禁止使用 `pnpm lint:fix`。仅使用 `pnpm lint` 检查，且只修复本次修改相关代码的错误，非本次修改的预存错误忽略
 - **代码修改后必须同步更新本文件**：新增、修改或删除文件时（组件、composable、页面、API、工具函数等），需立即更新**项目结构**、**API 端点**等对应章节，确保本文件始终反映最新代码细节
 
@@ -128,8 +127,8 @@ shared/                 前后端共享代码
 
 - 使用 Cloudflare Workers + D1 部署
 - D1 绑定在 `wrangler.jsonc` 中声明，构建时 nitro 合并到 `.output/server/wrangler.json`
-- 部署命令 `pnpm deploy` 执行：构建 Nitro preset `cloudflare_module` → `wrangler deploy --keep-vars` → 应用 D1 迁移（`wrangler --config .output/server/wrangler.json d1 migrations apply DB --remote`）
-- `wrangler deploy` 从根目录运行，经 `.wrangler/deploy/config.json` 重定向到 `.output/server/wrangler.json`；迁移命令需显式 `--config .output/server/wrangler.json`（`migrations_dir` 为相对该文件的 `db/migrations/sqlite/`）
+- 部署命令 `pnpm deploy` 通过 `cross-env` 跨平台设置 `NITRO_PRESET=cloudflare_module`，然后执行：构建 Nitro preset `cloudflare_module` → `wrangler deploy --keep-vars` → 应用 D1 迁移（`wrangler --config .output/server/wrangler.json d1 migrations apply DB --remote`）
+- `wrangler deploy` 从根目录运行，经构建生成且已被 gitignore 的 `.wrangler/deploy/config.json` 重定向到 `.output/server/wrangler.json`；迁移命令需显式 `--config .output/server/wrangler.json`（`migrations_dir` 为相对该文件的 `db/migrations/sqlite/`）
 - 部署前提：wrangler 已认证（`wrangler login`，或设置 `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` 环境变量）
 - `AUTH_SECRET` 需一次性执行 `wrangler secret put AUTH_SECRET` 设置生产密码（与本地 `.env` 中的值独立，`--keep-vars` 不会覆盖 secrets）
 - `pnpm backup` 导出远程 D1 到 `db.sql`（已被 gitignore），经 binding `DB` 从根 `wrangler.jsonc` 解析库名，不依赖构建产物
@@ -138,4 +137,11 @@ shared/                 前后端共享代码
 
 - Nuxt UI MCP 已配置在 `opencode.json` 中，可直接查询组件文档
 - 图标使用 `@iconify-json/lucide` 集，格式如 `i-lucide-*`
-- 项目实际使用的组件：`UApp`、`UModal`、`UForm`、`UTree`、`UDropdownMenu`、`UInput`、`UButton`、`UFormField`、`UToast`、`UAuthForm`
+- 项目实际使用的组件：`UApp`、`UModal`、`UForm`、`UTree`、`UDropdownMenu`、`UCommandPalette`、`UInput`、`UButton`、`UFormField`、`UAuthForm`
+- Toast 通过 Nuxt UI 的 `useToast()` composable 调用，没有直接渲染 `UToast` 组件
+
+## 项目技能
+
+- `skills-lock.json` 锁定 `nuxt-ui`、`cloudflare`、`wrangler` 三个项目技能，安装内容位于 `.agents/skills/`
+- Nuxt UI 组件、表单和界面任务使用 `nuxt-ui` 技能
+- Cloudflare Workers/D1 开发使用 `cloudflare` 技能；运行或修改 Wrangler 命令前使用 `wrangler` 技能
