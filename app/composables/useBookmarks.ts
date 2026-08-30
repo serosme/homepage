@@ -23,7 +23,7 @@ function toTreeItem(b: Bookmark) {
 }
 
 export function useBookmarks() {
-  const { data, refresh } = useSelfFetch<BookmarkWithAncestors[]>('/api/bookmarks')
+  const { data, refresh } = useSelfFetch<Bookmark[]>('/api/bookmarks')
 
   const maxPosition = computed(() => (data.value ?? []).reduce((max, b) => Math.max(max, b.position), 0))
 
@@ -42,7 +42,6 @@ export function useBookmarks() {
   })
 
   return {
-    data,
     leftTree,
     rightTree,
     maxPosition,
