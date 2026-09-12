@@ -5,7 +5,7 @@ allowBuilds:
   vue-demi: true
   workerd: true
 minimumReleaseAgeExclude:
-  - miniflare@4.20260706.0
-  - wrangler@4.108.0
+  - miniflare@4.20260706.0 || 5.20260911.0-alpha
+  - wrangler@4.108.0 || 4.131.1
   - jose@6.2.8
   - '@antfu/eslint-config@9.3.0'
