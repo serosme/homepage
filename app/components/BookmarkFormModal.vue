@@ -4,7 +4,7 @@ import type { FormError } from '@nuxt/ui'
 const props = defineProps<{
   open: boolean
   mode: 'create' | 'edit'
-  maxPosition?: number
+  nextPosition?: number
   parentId?: number
   item?: Bookmark | null
 }>()
@@ -21,6 +21,8 @@ const formState = reactive({
   name: '',
   url: '',
 })
+
+const submitting = ref(false)
 
 watch(() => props.open, (open) => {
   if (open) {
@@ -45,39 +47,47 @@ function validate(state: typeof formState): FormError<string>[] {
 }
 
 async function handleSubmit() {
-  if (props.mode === 'create') {
-    const body: InsertBookmark = {
-      type: 'bookmark',
-      name: formState.name,
-      url: formState.url || undefined,
-      position: (props.maxPosition ?? 0) + 1,
-      parentId: props.parentId,
+  if (submitting.value)
+    return
+  submitting.value = true
+  try {
+    if (props.mode === 'create') {
+      const body: InsertBookmark = {
+        type: 'bookmark',
+        name: formState.name,
+        url: formState.url || undefined,
+        position: props.nextPosition ?? 1,
+        parentId: props.parentId,
+      }
+
+      await selfFetch('/api/bookmarks', {
+        method: 'POST',
+        body,
+      })
+
+      emit('created')
+      emit('update:open', false)
     }
+    else {
+      const body: InsertBookmark = {
+        type: 'bookmark',
+        name: formState.name,
+        url: formState.url || null,
+        position: props.item?.position ?? props.nextPosition ?? 1,
+        parentId: props.item?.parentId ?? null,
+      }
 
-    await selfFetch('/api/bookmarks', {
-      method: 'POST',
-      body,
-    })
+      await selfFetch(`/api/bookmarks/${props.item!.id}`, {
+        method: 'PUT',
+        body,
+      })
 
-    emit('created')
-    emit('update:open', false)
+      emit('updated')
+      emit('update:open', false)
+    }
   }
-  else {
-    const body: InsertBookmark = {
-      type: 'bookmark',
-      name: formState.name,
-      url: formState.url || null,
-      position: props.item?.position ?? (props.maxPosition ?? 0) + 1,
-      parentId: props.item?.parentId ?? null,
-    }
-
-    await selfFetch(`/api/bookmarks/${props.item!.id}`, {
-      method: 'PUT',
-      body,
-    })
-
-    emit('updated')
-    emit('update:open', false)
+  finally {
+    submitting.value = false
   }
 }
 </script>
@@ -92,7 +102,7 @@ async function handleSubmit() {
         <UFormField label="URL" name="url" required>
           <UInput v-model="formState.url" class="w-full" />
         </UFormField>
-        <UButton type="submit">
+        <UButton type="submit" :loading="submitting">
           {{ mode === 'create' ? 'Create' : 'Save' }}
         </UButton>
       </UForm>

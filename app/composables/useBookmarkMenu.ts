@@ -7,10 +7,26 @@ function getBookmark(item: TreeItem): Bookmark {
 export function useBookmarkMenu(
   bookmarkForm: ReturnType<typeof useBookmarkForm>,
   remove: (id: number) => Promise<void>,
+  move: (id: number, direction: 'up' | 'down') => Promise<void>,
+  canMove: (id: number, direction: 'up' | 'down') => boolean,
 ) {
   function getMenu(item: TreeItem): DropdownMenuItem[][] {
     const b = getBookmark(item)
     const items: DropdownMenuItem[][] = [
+      [
+        {
+          label: 'Move Up',
+          icon: 'i-lucide-arrow-up',
+          disabled: !canMove(b.id, 'up'),
+          onSelect() { move(b.id, 'up') },
+        },
+        {
+          label: 'Move Down',
+          icon: 'i-lucide-arrow-down',
+          disabled: !canMove(b.id, 'down'),
+          onSelect() { move(b.id, 'down') },
+        },
+      ],
       [
         {
           label: 'Edit',

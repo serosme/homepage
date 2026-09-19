@@ -3,11 +3,12 @@ import type { DropdownMenuItem, TreeItem } from '@nuxt/ui'
 
 const bookmarkForm = useBookmarkForm()
 const folderForm = useFolderForm()
-const { leftTree, rightTree, refresh, maxPosition } = useBookmarks()
+const { leftTree, rightTree, refresh, data } = useBookmarks()
 const { remove: removeBookmark } = useDeleteBookmark(refresh)
 const { remove: removeFolder } = useDeleteFolder(refresh)
-const { getMenu: getBookmarkMenu } = useBookmarkMenu(bookmarkForm, removeBookmark)
-const { getMenu: getFolderMenu } = useFolderMenu(bookmarkForm, folderForm, removeFolder)
+const { move, canMove, nextPosition } = useReorderBookmarks(data, refresh)
+const { getMenu: getBookmarkMenu } = useBookmarkMenu(bookmarkForm, removeBookmark, move, canMove)
+const { getMenu: getFolderMenu } = useFolderMenu(bookmarkForm, folderForm, removeFolder, move, canMove)
 
 const treeLinkUi = { link: 'hover:text-inherit hover:before:bg-transparent before:bg-inherit text-inherit' }
 
@@ -87,7 +88,7 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
       :mode="bookmarkForm.modal.mode"
       :parent-id="bookmarkForm.modal.parentId"
       :item="bookmarkForm.modal.item"
-      :max-position="maxPosition"
+      :next-position="nextPosition(bookmarkForm.modal.parentId ?? null, 'bookmark')"
       @created="refresh"
       @updated="refresh"
     />
@@ -96,7 +97,7 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
       :mode="folderForm.modal.mode"
       :parent-id="folderForm.modal.parentId"
       :item="folderForm.modal.item"
-      :max-position="maxPosition"
+      :next-position="nextPosition(folderForm.modal.parentId ?? null, 'folder')"
       @created="refresh"
       @updated="refresh"
     />
