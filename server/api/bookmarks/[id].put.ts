@@ -6,9 +6,6 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<InsertBookmark>(event)
   if (body.parentId === id)
     throw createError({ statusCode: 400, message: 'ParentId cannot be itself' })
-  const existing = await db.select().from(schema.bookmarks).where(eq(schema.bookmarks.id, id)).get()
-  if (!existing)
-    throw createError({ statusCode: 400, message: 'Not found' })
   const data: InsertBookmark = {
     type: body.type,
     name: body.name,

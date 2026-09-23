@@ -111,8 +111,8 @@
 | GET    | `/api/bookmarks`         | 获取所有书签（按 position 排序）                                                                                                                                        |
 | POST   | `/api/bookmarks`         | 创建书签/文件夹（body: name, type, position，数据库非空约束）                                                                                                           |
 | PUT    | `/api/bookmarks/reorder` | 同级重排（body: parentId, type, ids），按 ids 顺序把该分组的 position 重写为 1..n；不校验 ids 覆盖度，由调用方保证传完整分组                                            |
-| PUT    | `/api/bookmarks/:id`     | 更新书签/文件夹（parentId 不能等于自身 id；不存在返回 400）                                                                                                             |
-| DELETE | `/api/bookmarks/:id`     | 删除；非空文件夹返回 400 'Folder is not empty'，不存在返回 400；删除与同组剩余项重编号在同一 `db.batch()` 中原子完成（重编号是单条语句，见 `server/utils/renumber.ts`） |
+| PUT    | `/api/bookmarks/:id`     | 更新书签/文件夹（parentId 不能等于自身 id；不存在时更新 0 行）                                                                                                             |
+| DELETE | `/api/bookmarks/:id`     | 删除；非空文件夹返回 400 'Folder is not empty'；删除与同组剩余项重编号在同一 `db.batch()` 中原子完成（重编号是单条语句，见 `server/utils/renumber.ts`） |
 
 除 `/api/auth/login` 外所有 API 均需登录（`server/middleware/auth.ts` 校验 token）。`reorder` 是静态路由，优先于 `[id]` 动态路由匹配。
 
