@@ -43,6 +43,13 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
 
 <template>
   <div class="pl-[28vw] pr-[22vw] py-[10vh] min-h-screen flex">
+    <UButton
+      to="/files"
+      icon="i-lucide-folder-tree"
+      color="neutral"
+      variant="ghost"
+      class="fixed bottom-4 right-4"
+    />
     <div class="w-1/2 min-w-0">
       <UTree
         :items="leftTreeWithAdd"

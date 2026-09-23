@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   },
   hub: {
     db: 'sqlite',
+    blob: true,
   },
   routeRules: {
     '/': { redirect: '/bookmarks' },

@@ -5,5 +5,11 @@
       "binding": "DB",
       "database_name": "homepage-db"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BLOB",
+      "bucket_name": "homepage-files"
+    }
   ]
 }
