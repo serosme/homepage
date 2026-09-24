@@ -13,7 +13,7 @@ async function onLoggedIn() {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center">
+  <div class="flex min-h-screen -translate-y-24 items-center justify-center">
     <div class="w-full max-w-sm">
       <LoginForm @logged-in="onLoggedIn" />
     </div>
