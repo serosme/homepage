@@ -1,6 +1,6 @@
 # Homepage Agent Instructions
 
-个人自用的 Nuxt 4 书签管理应用：单用户密码登录，左栏文件夹树 + 右栏根级书签，节点行右侧三个点菜单负责新建、编辑、删除和同级上移下移。
+个人自用的 Nuxt 4 书签与文件管理应用：单用户密码登录，书签页为左右双树，文件页为文件树 + 预留预览区；书签节点及空白区域、文件树节点及空白区域均通过右键打开上下文菜单。
 
 这是个人项目，使用场景、数据来源和操作流程都是明确且受控的：实现时保持简单、直接，优先复用现有模块，不为假想的通用性增加抽象层或防御代码。
 
@@ -12,15 +12,15 @@
 
 - **F1 密码登录**：单用户密码登录。密码与 JWT 签名密钥同为环境变量 `AUTH_SECRET`，成功后设置 httpOnly cookie；除 `/api/auth/login` 外所有 API 都经中间件校验 token。
 - **F2 书签数据与树构建**：一次拉取全部行，经 `sortBookmarks` 排序后用 `buildTree` 组装为左树的嵌套结构与右树的平铺列表。
-- **F3 双栏视图与节点菜单**：左栏文件夹树（文件夹 + 挂在文件夹下的书签），右栏根级书签；节点行 hover 时显示三个点，菜单通过右键节点/空白区域打开，按节点类型分派，两棵树底部各有一个默认透明、hover 才显示的新建虚拟项。
+- **F3 双栏视图与节点菜单**：书签页左栏显示所有文件夹及其子书签，右栏显示根级书签；树节点通过右键打开节点操作菜单，节点链接隐藏默认尾随箭头；左右面板及右键区域铺满视口高度，面板空白处右键显示新建菜单（左侧新建文件夹/书签，右侧新建书签），无底部新建虚拟项。
 - **F4 新建与编辑**：书签、文件夹各一个 create/edit 双模式弹窗；新建位置由 `nextPosition(parentId, type)` 给出，提交带 `submitting` 守卫防重复提交。
 - **F5 删除**：书签/文件夹删除；非空文件夹拒绝删除；删除后把同组剩余项整段重编号。
-- **F6 同级上移下移**：三个点菜单里的 Move Up / Move Down；处于分组首尾时对应项 disabled，请求在途时全部 disabled。
+- **F6 同级上移下移**：右键节点菜单里的 Move Up / Move Down；处于 `(parentId, type)` 分组首尾时对应项 disabled，请求在途时所有节点的移动项 disabled。
 - **F7 排序位置模型**：`position` 的分组不变式、`nextPosition` 语义，以及统一的单条语句重编号 `renumberGroupQuery`。
-- **F8 请求与错误处理**：`selfFetch` 统一弹错误 toast、401 跳登录；`useSelfFetch` 是其 useFetch 封装。
+- **F8 请求与错误处理**：`selfFetch` 在请求错误时弹出英文 toast，401 时跳转登录；`useSelfFetch` 是其 `useFetch` 封装。
 - **F9 数据库与迁移**：Drizzle schema、开发用本地 SQLite、生产用 Cloudflare D1、迁移文件。
 - **F10 部署与备份**：`pnpm deploy` 构建 Workers 产物并应用 D1 迁移；`pnpm backup` 导出远程 D1 到 `db.sql`。
-- **F11 文件树**：使用 NuxtHub Blob Storage（本地 FS driver、生产 Cloudflare R2 driver），通过对象路径构建左侧完整文件树（文件夹与文件统一使用前端 lucide 图标），支持文件夹、文件和空白处右键菜单，空白处可上传文件；文件可下载、删除，文件夹可删除并往里上传（没有整夹下载、也没有重命名），上传弹窗可选择文件并填写路径前缀（默认取所在文件夹）并显示分片上传进度，右侧预留预览窗格；页面留白与双栏比例复用书签页的 `pl-[28vw] pr-[22vw] py-[10vh]`。
+- **F11 文件树**：使用 NuxtHub Blob Storage（本地 FS driver、生产 Cloudflare R2 driver），通过对象路径构建左侧完整文件树（文件夹与文件统一使用前端 lucide 图标），支持文件夹、文件和空白处右键菜单，空白处可上传文件；文件可下载、删除，文件夹可删除并往里上传（没有整夹下载、也没有重命名），上传弹窗可选择文件并填写路径前缀（默认取所在文件夹）并显示分片上传进度，右侧预留预览窗格；页面使用 `pl-[28vw] pr-[22vw] py-[10vh]` 留白与左右各半布局，视口高度铺满。
 - **F12 工程配置与项目技能**：Nuxt / ESLint / TypeScript / Wrangler 配置、编辑器设置、Agent 技能锁定。
 
 ### 目录与功能对应
@@ -46,14 +46,14 @@
 │  │  ├─ useBookmarks.ts           # F2：数据获取与 leftTree / rightTree 构建，并暴露 data 供注入
 │  │  ├─ useBookmarkForm.ts        # F4：书签弹窗状态管理（openCreate/openEdit）
 │  │  ├─ useFolderForm.ts          # F4：文件夹弹窗状态管理（openCreate/openEdit）
-│  │  ├─ useDeleteBookmark.ts      # F5：书签删除（DELETE + refresh + toast）
-│  │  ├─ useDeleteFolder.ts        # F5：文件夹删除（DELETE + refresh + toast）
+│  │  ├─ useDeleteBookmark.ts      # F5：书签删除（DELETE + 调用传入的 refresh + toast）
+│  │  ├─ useDeleteFolder.ts        # F5：文件夹删除（DELETE + 调用传入的 refresh + toast）
 │  │  ├─ useReorderBookmarks.ts    # F6/F7：move / canMove / nextPosition；在途时 canMove 恒 false
-│  │  ├─ useBookmarkMenu.ts        # F3/F6：书签三个点菜单（打开/上移下移/编辑/删除）
-│  │  └─ useFolderMenu.ts          # F3/F4/F6：文件夹三个点菜单（新建×2/上移下移/编辑/删除）
+│  │  ├─ useBookmarkMenu.ts        # F3/F6：书签节点右键菜单（打开/上移下移/编辑/删除）
+│  │  └─ useFolderMenu.ts          # F3/F4/F6：文件夹节点右键菜单（新建×2/上移下移/编辑/删除）
 │  ├─ pages/
 │  │  ├─ index.vue                 # F3：重定向到 /bookmarks
-│  │  ├─ bookmarks.vue             # F3：主页面，组装全部 composable，节点 hover 显示三个点，节点及空白处右键打开菜单，右下角链接到 /files
+│  │  ├─ bookmarks.vue             # F3：主页面，书签双树视图；节点及左右铺满视口高度的空白区域右键打开菜单，隐藏树节点默认尾随箭头，右下角链接到 /files
 │  │  ├─ files.vue                 # F11：文件树与右侧预留空白预览区，右下角链接回 /bookmarks
 │  │  └─ login.vue                 # F1：登录页（redirect 查询参数回跳）
 │  └─ utils/
@@ -81,8 +81,6 @@
 │     └─ renumber.ts               # F7：renumberGroupQuery，单条语句把分组 position 重写为 1..n
 ├─ shared/types/db.ts              # F9：前后端共享类型（Bookmark, InsertBookmark）
 ├─ shared/types/files.ts           # F11：文件树节点类型（FileTreeNode）
-├─ docs/bookmark-slim-backlog.md   # F2/F4：书签与认证侧可精简项、保留项（本轮只记录不改）
-├─ docs/download-notes.md          # F11：下载方案的取舍（64MB 上限的由来、被放弃的流式/预签名方案）
 ├─ .agents/skills/                 # F12：nuxt-ui / cloudflare / wrangler 技能安装内容
 ├─ .vscode/settings.json           # F12：ESLint 保存自动修复、禁用 Prettier、Tailwind 提示
 ├─ public/
@@ -91,7 +89,6 @@
 ├─ .env.example                    # F12：环境变量模板（AUTH_SECRET）
 ├─ eslint.config.js                # F12：@antfu/eslint-config
 ├─ nuxt.config.ts                  # F12：模块（@nuxthub/core、@nuxt/ui）、hub.db=sqlite、hub.blob、routeRules
-├─ opencode.json                   # F12：Nuxt UI MCP 配置
 ├─ package.json                    # F12：依赖与 dev/build/lint/typecheck/deploy 脚本
 ├─ pnpm-lock.yaml                  # F12：依赖锁定
 ├─ pnpm-workspace.yaml             # F12：workspace 配置
@@ -109,7 +106,7 @@
 | `pnpm dev`         | 启动开发服务器                 |
 | `pnpm build`       | 构建生产版本                   |
 | `pnpm preview`     | 预览构建结果                   |
-| `pnpm lint`        | ESLint 检查（含格式化）        |
+| `pnpm lint`        | ESLint 检查                    |
 | `pnpm lint:fix`    | ESLint 自动修复                |
 | `pnpm typecheck`   | TypeScript 类型检查            |
 | `pnpm ncu`         | 检查依赖更新                   |
@@ -176,10 +173,10 @@
 - **同名文件默认覆盖**：multipart 上传不在 `create` 阶段检查目标是否已存在；`complete` 会直接写入同名 key 并覆盖原文件
 - **并发策略：本地与线上统一串行**（`concurrent: 1`）。本地 fs driver 的分片状态是本地 JSON 文件，每个分片请求都要「读它 → 改 → 整个写回」，并发会出现三类问题：多个请求同时读改写同一文件互相覆盖、`writeFile` 先截断再写导致别的请求读到半截 JSON（`JSON.parse` 失败）、失败重试把同一分片号重新入队造成重复上传——任一条都会报 `Multipart upload not found`（这个错名有误导性，它同时覆盖了「文件不存在」和「JSON 解析失败」）。线上 R2 虽由服务端维护分片状态，但为保持两端上传参数与并发行为一致，也使用串行上传。
 - **本地中断上传会留残留**：fs driver 的分片元数据就写在 blob 目录里（`<pathname>.mpu.<uploadId>.json` 和 `.mpu.<uploadId>/分片文件`），而 `walkDir` 把它们当普通对象列出来——本地 `pnpm dev` 中途关页面／刷新会让这些垃圾节点出现在文件树里并永久保留（正常 complete 会删掉，重试耗尽时库会 `abort`）。线上 R2 的分片状态在服务端，没有这些文件；清理就是手动删掉 `.data/blob` 下对应的 `*.mpu.*.json` 和 `.mpu.*` 目录
-- **`partSize × concurrent` 就是服务端内存峰值**：`createGenericMultipartUploadHandler` 对每个分片做 `streamToArrayBuffer(stream, contentLength)`，整片进内存。当前 10MB × 5 = 50MB，Workers 上限 128MB（per-isolate，还要装应用本身和其它请求）。**别把这两个值一起放大**，例如 50MB × 3 就是 150MB，会直接撞内存上限报 1102；要提速优先调 `partSize`（重传代价和内存都线性上涨，需要权衡），并发上限别超过 5
+- **`partSize × concurrent` 就是服务端内存峰值**：`createGenericMultipartUploadHandler` 对每个分片做 `streamToArrayBuffer(stream, contentLength)`，整片进内存。当前 10MB × 1 = 10MB，Workers 上限 128MB（per-isolate，还要装应用本身和其它请求）。并发当前固定为 1；提高 `partSize` 会线性增加内存占用与重传代价
 - **不要用服务端 prefix 前缀列举**：`server/utils/blob-files.ts` 的 `listBlobs(prefix)` 是「拉全量 + 内存按前缀过滤」。`@nuxthub/blob` 的 fs driver 把 `list` 的 prefix 当目录名处理（`join(dir, prefix)`），传文件 key 会以「读目录」失败返回空列表，传 `docs/` 这类带斜杠的目录也不一定命中，结果是删除「接口成功但什么都没发生」。前缀过滤统一走 `listBlobs(prefix)`（内部就是「拉全量 + 内存过滤」两步，不再单独暴露 `listAllBlobs` / `filterByPrefix`），前缀尾部斜杠会被剥掉再比较，并只匹配 `${base}/` 下的对象，避免误匹配同名文件 `docs` 或 `docs-other.txt`；`tree.get.ts` 直接用 `listBlobs('')`，`delete.delete.ts` 用 `listBlobs(path)` 取整棵子树；R2 driver 的 `list({ prefix })` 本身是正常的，但为了两端一致也走同一个函数
 - 下载走 `server/api/files/download.get.ts`：`blob.head` 取大小（文件不存在时它自己抛 404）→ 超过 `MAX_SIZE`（64MB）返回 413 → `blob.serve(event, path)` 流式返回（内部读成 ArrayBuffer 后包成 ReadableStream，返回给 h3 时 `isStream` 认 `pipeTo`）。**`Content-Disposition` 的头值只能是 latin1**，中文名直接写进 `filename=` 会让 Node / Workers 的头校验抛 `ERR_INVALID_CHAR`、整个下载 500，所以 ASCII 名回退一份、真正的名字走 RFC 5987 的 `filename*=UTF-8''`
-- **下载的 64MB 上限是 NuxtHub API 的边界，不是随手设的**：`blob.get` / `blob.serve` / `driver.get` / `driver.getArrayBuffer` 全都是整份读——fs 和 R2 driver 都没有流式读接口，所以单个下载请求的峰值内存是 O(文件大小)。`serve` 已经把「返回 Blob 再被 h3 复制一份」的 2× 降到 1×，但线上 isolate 上限仍是 128MB，留出运行时余量后取 64MB；本地 `pnpm dev` 同样受限，为的是本地和线上行为一致。**要下任意大小只能绕过 NuxtHub 直读 R2 binding**（`R2ObjectBody.body` 是 ReadableStream），那会让本地（fs）和线上走两条不同实现、行为可能不一致（内容类型来源、404 语义、路径解码都不同），这一点已明确放弃——见 `docs/download-notes.md`
+- **下载的 64MB 上限**：`blob.get` / `blob.serve` / driver 的 `get` 都是整份读取，下载请求内存随文件大小增长。将最大下载大小限制为 64MB，为 Workers 运行时预留内存空间；`Content-Disposition` 文件名使用 RFC 5987 编码以支持中文名。
 - 删除走 `server/api/files/delete.delete.ts`：key 以 `/` 结尾（文件夹）时用 `listBlobs(path)` 收集整棵子树再一次性 `blob.del(keys)`，否则直接 `blob.del(path)`；两个 driver 的 delete 都会忽略不存在的 key，所以不做存在性校验（删不存在的路径是幂等的，个人单用户也不需要「别人先删了」这种防御）。handler 不写 return：Nitro 用 `preemptive` router，`undefined` 会被转成 `null` → 204。`useDeleteFile.remove(path)` 只负责发请求和 toast，**不在内部调 `refresh`**——刷新由页面在 `@deleted` 时做一次（`refresh` 由 `useFetch` 同一 key 去重，重复调用会取消其中一个请求并抛出 `AbortError: AsyncData request cancelled by deduplication` 被全局 toast 弹出来）
 - 删除确认弹窗（`FileDeleteModal.vue`）按 `node.type` 显示「删除文件夹 / 删除文件」，文件夹额外提示会连带删除内部文件，提交带 `submitting` 守卫；菜单状态由 `useFileDeleteForm`（`open + node`）持有，与上传弹窗的 `useFileUploadForm` 同构
 - 上传弹窗（`FileUploadModal.vue`）收文件 + 路径前缀 + 上传进度条。最终 key 是 `prefix/文件名`；路径为空就是根目录；在文件夹里上传时路径默认是该文件夹的 `key`，用户可以继续往后追加一层（如 `documents/photos`），**新增的层不需要预先存在**，上传后自然会出现在树里——这就是替代「新建文件夹」的做法。上传期间路径输入与文件选择都 disabled，避免中途改 key
@@ -190,19 +187,19 @@
 
 ## 前端架构约定
 
+- **删除刷新时序**：`useDeleteBookmark` / `useDeleteFolder` 在 DELETE 成功后立即调用传入的 `refresh()`（不 await），随后提示成功；文件删除 composable 不刷新，由页面在删除事件后刷新。
 - **文案语言与页面导航**：书签页菜单、弹窗和提示使用英文；文件树页菜单、弹窗等界面文案使用中文，但所有 Toast 提示统一使用英文；`/files` 没有全局导航，两页右下角各有一个 `fixed bottom-4 right-4` 的仅图标 `UButton to=...` 链接互相跳转（书签页文件树图标 → `/files`，文件页书签图标 → `/bookmarks`）
 - **浅层封装**：书签/文件夹的**新增、编辑、删除**逻辑全部分离（useBookmarkForm / useFolderForm / useDeleteBookmark / useDeleteFolder），即使代码相似也不合并
 - **单一职能**：数据（`useBookmarks`）、弹窗状态（`*Form`）、删除（`useDelete*`）、排序（`useReorderBookmarks`）、菜单（`*Menu`）各自独立，互不混合
 - **依赖注入**：页面（bookmarks.vue）实例化 composable 后以参数注入菜单 composable（如 `useFolderMenu(bookmarkForm, folderForm, removeFolder, move, canMove)`），菜单内部不自行实例化状态类 composable
 - **排序模型**：分组键为 `(parentId, type)`，同组内 `sortBookmarks` 恒定「文件夹优先」→「position 升序」，因此 UI 中一段连续可视区间恰好等于一个分组。客户端排序是唯一权威（`leftTree` / `rightTree` 都经 `sortBookmarks`），不依赖 `GET /api/bookmarks` 的返回顺序。移动**只做整段重编号**（按新顺序把 position 写回 `1..n`），**永不交换 position 值**——历史数据的 position 是全局计数器留下的，可能带偏移和间隙，交换语义未定义且无法自愈。新建位置由 `useReorderBookmarks` 的 `nextPosition(parentId, type)` 统一计算，它返回**可直接写入数据库的 position**（组内 `max(position) + 1`，空分组为 1），调用方（弹窗的 `nextPosition` prop）**不得再 `+1`**——位置计算只发生一次；编辑保留原 position。历史数据无需预先迁移，删除或移动时会将目标分组整段归一化为 `1..n`
 - **重编号实现**：必须走 `server/utils/renumber.ts` 的 `renumberGroupQuery(parentId, type, orderedIds)`，它用 SQLite JSON1 的 `json_each` 把顺序当参数传入，**语句数恒为 1、绑定参数为常数个且最多 4 个，与分组大小 N 无关**。不要改回「每行一条 UPDATE」（随 N 线性增长，会撞 D1 每批语句数限制），也不要改成「单条 CASE」（要 2N 个绑定参数，会撞 D1 每查询 100 个绑定参数的限制）。**调用方必须传入该分组的完整成员**——服务端不做覆盖度校验，漏传的行不会被更新
-- **菜单求值成本**：三个点菜单的 `items` 在渲染期求值，`canMove` 因此对每个节点每次渲染被调用两次。`useReorderBookmarks` 的 `located` computed 把 `id → { item, group, index }` 预先算好，`locate` 只做 Map 查找；不要在 `canMove` / `locate` 内重排或扫描全量数据（348 行时每渲染会多做约 16ms）
+- **移动能力查询成本**：`useReorderBookmarks` 的 `located` computed 预先构造 `id → { item, group, index }` 映射，`locate` 只做 Map 查找。不要在 `canMove` / `locate` 内重排或扫描全量数据；以往扫描造成的约 16ms/次开销是优化此处的原因。
 - **错误处理（fail loudly）**：`selfFetch` 已在全局统一弹出错误 toast，业务代码**不写 try/catch 包裹请求**；失败时异常自然传播（unhandled rejection 即预期表现），成功路径（emit/refresh/toast）不执行
 - **例外**：`server/utils/jwt.ts` 的 `verifyToken` 用 try/catch 将校验失败转为布尔值（预期输入判断，非意外错误）
 
 ## Nuxt UI
 
-- Nuxt UI MCP 已配置在 `opencode.json` 中，可直接查询组件文档
 - 图标使用 `@iconify-json/lucide` 集，格式如 `i-lucide-*`
 - 项目实际使用的组件：`UApp`、`UModal`、`UForm`、`UTree`、`UDropdownMenu`、`UInput`、`UButton`、`UFormField`、`UAuthForm`
 - `UTree` 没有拖拽能力（底层 Reka `TreeRoot` 亦无），排序只通过菜单上移/下移实现
