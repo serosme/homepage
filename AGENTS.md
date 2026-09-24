@@ -230,8 +230,7 @@
 - 页面请求优先走 `selfFetch` / `useSelfFetch`；样式使用 Tailwind class 与 Nuxt UI 的 `ui` 属性。
 - `try/finally` 是允许的：它没有 `catch`，不吞异常，仅用于复位状态（如 `moving`、`submitting`），不违反 fail-loudly 约定。
 - ESLint 使用 `@antfu/eslint-config`（已启用 formatters 与 vue 规则），不支持 Prettier（`.vscode/settings.json` 已禁用）；style/format 类规则与引号、分号由 ESLint 自动修复，保存时自动执行。
-- `pnpm-workspace.yaml` 有 5 个预存 lint 错误（`shellEmulator` / `trustPolicy` / `minimumReleaseAgeExcludePrune` / `yaml/sort-keys` / `yaml/blank-lines`），属配置问题非代码问题，可忽略。
-- 每次修改代码后必须执行 `pnpm lint` 和 `pnpm typecheck`；除上述预存错误外，不得新增错误。
-- 禁止使用 `pnpm lint:fix`；只用 `pnpm lint` 检查，并且只修复本次修改相关代码的错误，与本次无关的预存错误忽略。
+- 每次修改代码后必须执行 `pnpm lint` 和 `pnpm typecheck`，不得新增错误。
+- 禁止使用 `pnpm lint:fix`；只用 `pnpm lint` 检查，并且只修复本次修改相关代码的错误。
 - **代码修改后必须同步更新本文件**：新增、修改或删除文件时（组件、composable、页面、API、工具函数、配置等），立即更新**功能**、**目录与功能对应**、**API 端点**等对应章节，确保文档始终反映最新代码。
 - 不将构建产物、缓存、依赖与本地数据纳入 Git（`.output`、`.nuxt`、`.data`、`node_modules`、`.env`、`db.sql`、`.wrangler`）。
