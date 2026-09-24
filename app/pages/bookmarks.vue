@@ -56,7 +56,7 @@ const contextRightTree = computed<TreeItem[]>(() => withContextTokens(rightTree.
 </script>
 
 <template>
-  <div class="pl-[28vw] pr-[22vw] py-[10vh] flex h-screen">
+  <div class="pl-[30vw] pr-[20vw] py-[10vh] flex h-screen">
     <UButton
       to="/files"
       icon="i-lucide-folder-tree"
