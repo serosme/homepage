@@ -12,7 +12,7 @@
 
 - **F1 密码登录**：单用户密码登录。密码与 JWT 签名密钥同为环境变量 `AUTH_SECRET`，成功后设置 httpOnly cookie；除 `/api/auth/login` 外所有 API 都经中间件校验 token。
 - **F2 书签数据与树构建**：一次拉取全部行，经 `sortBookmarks` 排序后用 `buildTree` 组装为左树的嵌套结构与右树的平铺列表。
-- **F3 双栏视图与节点菜单**：左栏文件夹树（文件夹 + 挂在文件夹下的书签），右栏根级书签；节点行右侧三个点下拉菜单按节点类型分派，两棵树底部各有一个默认透明、hover 才显示的新建虚拟项。
+- **F3 双栏视图与节点菜单**：左栏文件夹树（文件夹 + 挂在文件夹下的书签），右栏根级书签；节点行 hover 时显示三个点，菜单通过右键节点/空白区域打开，按节点类型分派，两棵树底部各有一个默认透明、hover 才显示的新建虚拟项。
 - **F4 新建与编辑**：书签、文件夹各一个 create/edit 双模式弹窗；新建位置由 `nextPosition(parentId, type)` 给出，提交带 `submitting` 守卫防重复提交。
 - **F5 删除**：书签/文件夹删除；非空文件夹拒绝删除；删除后把同组剩余项整段重编号。
 - **F6 同级上移下移**：三个点菜单里的 Move Up / Move Down；处于分组首尾时对应项 disabled，请求在途时全部 disabled。
@@ -53,7 +53,7 @@
 │  │  └─ useFolderMenu.ts          # F3/F4/F6：文件夹三个点菜单（新建×2/上移下移/编辑/删除）
 │  ├─ pages/
 │  │  ├─ index.vue                 # F3：重定向到 /bookmarks
-│  │  ├─ bookmarks.vue             # F3：主页面，组装全部 composable，item-trailing 插槽渲染三个点菜单，右下角链接到 /files
+│  │  ├─ bookmarks.vue             # F3：主页面，组装全部 composable，节点 hover 显示三个点，节点及空白处右键打开菜单，右下角链接到 /files
 │  │  ├─ files.vue                 # F11：文件树与右侧预留空白预览区，右下角链接回 /bookmarks
 │  │  └─ login.vue                 # F1：登录页（redirect 查询参数回跳）
 │  └─ utils/

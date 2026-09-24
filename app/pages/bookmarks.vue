@@ -10,39 +10,53 @@ const { move, canMove, nextPosition } = useReorderBookmarks(data, refresh)
 const { getMenu: getBookmarkMenu } = useBookmarkMenu(bookmarkForm, removeBookmark, move, canMove)
 const { getMenu: getFolderMenu } = useFolderMenu(bookmarkForm, folderForm, removeFolder, move, canMove)
 
-const treeLinkUi = { link: 'hover:text-inherit hover:before:bg-transparent before:bg-inherit text-inherit' }
+const treeLinkUi = {
+  link: 'hover:text-inherit hover:before:bg-transparent before:bg-inherit text-inherit',
+  linkTrailingIcon: 'hidden',
+}
+const contextBookmark = ref<TreeItem>()
+const contextIsLeft = ref(true)
+const contextMenuItems = computed(() => getMenu(contextBookmark.value, contextIsLeft.value))
+let nodeToken = 0
+const nodes = new Map<string, TreeItem>()
 
-function getLeftMenu(item: TreeItem): DropdownMenuItem[][] {
+function getMenu(item: TreeItem | undefined, left: boolean): DropdownMenuItem[][] {
+  if (!item) {
+    const createItems: DropdownMenuItem[] = [
+      ...(left ? [{ label: 'New Folder', icon: 'i-lucide-folder-plus', onSelect: () => folderForm.openCreate() } satisfies DropdownMenuItem] : []),
+      { label: 'New Bookmark', icon: 'i-lucide-bookmark-plus', onSelect: () => bookmarkForm.openCreate() },
+    ]
+    return [createItems]
+  }
   const b = (item as TreeItem & { _bookmark: Bookmark })._bookmark
-  return b.type === 'folder' ? getFolderMenu(item) : getBookmarkMenu(item)
+  return b.type === 'folder' && left ? getFolderMenu(item) : getBookmarkMenu(item)
+}
+
+function withContextTokens(items: TreeItem[]): TreeItem[] {
+  return items.map((item) => {
+    const token = `bookmark-node-${nodeToken++}`
+    nodes.set(token, item)
+    return { ...item, class: `${item.class ?? ''} ${token}`.trim(), ...(item.children ? { children: withContextTokens(item.children) } : {}) }
+  })
+}
+
+function openContextMenu(event: MouseEvent, left: boolean) {
+  contextIsLeft.value = left
+  const link = (event.target as HTMLElement).closest('[data-slot="link"]')
+  const token = link?.className.match(/bookmark-node-\d+/)?.[0]
+  contextBookmark.value = token ? nodes.get(token) : undefined
 }
 
 function getItemKey(item: TreeItem): string {
   return String((item as TreeItem & { id: number | string }).id)
 }
 
-const addFolderItem: TreeItem & { id: string } = {
-  id: 'add-folder',
-  label: 'New Folder',
-  icon: 'i-lucide-folder-plus',
-  onSelect: () => folderForm.openCreate(),
-  class: 'opacity-0 hover:opacity-100 hover:delay-500 transition-opacity',
-}
-
-const addBookmarkItem: TreeItem & { id: string } = {
-  id: 'add-bookmark',
-  label: 'New Bookmark',
-  icon: 'i-lucide-bookmark-plus',
-  onSelect: () => bookmarkForm.openCreate(),
-  class: 'opacity-0 hover:opacity-100 hover:delay-500 transition-opacity',
-}
-
-const leftTreeWithAdd = computed<TreeItem[]>(() => [...leftTree.value, addFolderItem])
-const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBookmarkItem])
+const contextLeftTree = computed<TreeItem[]>(() => withContextTokens(leftTree.value))
+const contextRightTree = computed<TreeItem[]>(() => withContextTokens(rightTree.value))
 </script>
 
 <template>
-  <div class="pl-[28vw] pr-[22vw] py-[10vh] min-h-screen flex">
+  <div class="pl-[28vw] pr-[22vw] py-[10vh] flex h-screen">
     <UButton
       to="/files"
       icon="i-lucide-folder-tree"
@@ -50,45 +64,19 @@ const rightTreeWithAdd = computed<TreeItem[]>(() => [...rightTree.value, addBook
       variant="ghost"
       class="fixed bottom-4 right-4"
     />
-    <div class="w-1/2 min-w-0">
-      <UTree
-        :items="leftTreeWithAdd"
-        :get-key="getItemKey"
-        :ui="treeLinkUi"
-      >
-        <template #item-trailing="{ item }">
-          <UDropdownMenu v-if="'_bookmark' in item" :items="getLeftMenu(item)" :content="{ align: 'end' }">
-            <UButton
-              icon="i-lucide-ellipsis-vertical"
-              color="neutral"
-              variant="link"
-              size="xs"
-              class="opacity-0 transition-opacity group-hover:opacity-100 group-hover:delay-500"
-              @click.stop
-            />
-          </UDropdownMenu>
-        </template>
-      </UTree>
+    <div class="w-1/2 min-w-0 h-full">
+      <UContextMenu :items="contextMenuItems" class="block h-full">
+        <div class="h-full min-h-32 w-full" @contextmenu="openContextMenu($event, true)">
+          <UTree :items="contextLeftTree" :get-key="getItemKey" :ui="treeLinkUi" />
+        </div>
+      </UContextMenu>
     </div>
-    <div class="w-1/2 min-w-0">
-      <UTree
-        :items="rightTreeWithAdd"
-        :get-key="getItemKey"
-        :ui="treeLinkUi"
-      >
-        <template #item-trailing="{ item }">
-          <UDropdownMenu v-if="'_bookmark' in item" :items="getBookmarkMenu(item)" :content="{ align: 'end' }">
-            <UButton
-              icon="i-lucide-ellipsis-vertical"
-              color="neutral"
-              variant="link"
-              size="xs"
-              class="opacity-0 transition-opacity group-hover:opacity-100 group-hover:delay-500"
-              @click.stop
-            />
-          </UDropdownMenu>
-        </template>
-      </UTree>
+    <div class="w-1/2 min-w-0 h-full">
+      <UContextMenu :items="contextMenuItems" class="block h-full">
+        <div class="h-full min-h-32 w-full" @contextmenu="openContextMenu($event, false)">
+          <UTree :items="contextRightTree" :get-key="getItemKey" :ui="treeLinkUi" />
+        </div>
+      </UContextMenu>
     </div>
     <BookmarkFormModal
       v-model:open="bookmarkForm.modal.open"
